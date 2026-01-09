@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { useForm, useWatch } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Plus } from "lucide-react";
 
 import { createGoal } from "@/app/actions";
@@ -14,8 +16,15 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -23,21 +32,37 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { GoalTargetType, GoalTargetUnit, Period } from "@/db/schema";
+import {
+  CreateGoalInput,
+  GoalTargetType,
+  GoalTargetUnit,
+  Period,
+  createGoalSchema,
+} from "@/db/schema";
 import { capitalize } from "@/lib/utils";
 
 export function AddGoalDialog() {
   const [open, setOpen] = useState(false);
-  const [period, setPeriod] = useState<Period>(Period.Weekly);
-  const [targetType, setTargetType] = useState<GoalTargetType>(GoalTargetType.Count);
-  const [targetUnit, setTargetUnit] = useState<GoalTargetUnit>(GoalTargetUnit.Minutes);
-  const handleSubmit = async (formData: FormData) => {
-    await createGoal(formData);
+
+  const form = useForm<CreateGoalInput>({
+    resolver: zodResolver(createGoalSchema),
+    defaultValues: {
+      title: "",
+      period: Period.Weekly,
+      targetType: GoalTargetType.Count,
+      targetValue: 1,
+      targetUnit: GoalTargetUnit.Minutes,
+    },
+  });
+
+  const targetType = useWatch({ control: form.control, name: "targetType" });
+  const period = useWatch({ control: form.control, name: "period" });
+
+  const onSubmit = async (data: CreateGoalInput) => {
+    await createGoal(data);
 
     setOpen(false);
-    setPeriod(Period.Weekly);
-    setTargetType(GoalTargetType.Count);
-    setTargetUnit(GoalTargetUnit.Minutes);
+    form.reset();
   };
 
   return (
@@ -52,84 +77,123 @@ export function AddGoalDialog() {
           <DialogTitle>Add Goal</DialogTitle>
           <DialogDescription>Create a new goal or practice.</DialogDescription>
         </DialogHeader>
-        <form action={handleSubmit} className="space-y-4">
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="title">Title</Label>
-              <Input name="title" placeholder="e.g. Piano, Run, Read" required />
-            </div>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <FormField
+              control={form.control}
+              name="title"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Title</FormLabel>
+                  <FormControl>
+                    <Input placeholder="e.g. Piano, Run, Read" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
             <div className="space-y-4">
-              <div className="space-y-2">
-                <Label>Period</Label>
-                <Select name="period" value={period} onValueChange={(v) => setPeriod(v as Period)}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.values(Period).map((p) => (
-                      <SelectItem key={p} value={p}>
-                        {capitalize(p)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2 flex-1">
-                <Label>Track By</Label>
-                <Select
-                  name="targetType"
-                  value={targetType}
-                  onValueChange={(v) => setTargetType(v as GoalTargetType)}
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.values(GoalTargetType).map((type) => (
-                      <SelectItem key={type} value={type}>
-                        {capitalize(type)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2 flex-1">
-                <Label className="capitalize">{period} Target</Label>
-                <div className="flex gap-2">
-                  <Input
-                    name="targetValue"
-                    type="number"
-                    defaultValue="1"
-                    min="1"
-                    required
-                    className="flex-1"
-                  />
-                  {targetType === GoalTargetType.Duration && (
-                    <Select
-                      name="targetUnit"
-                      value={targetUnit}
-                      onValueChange={(v) => setTargetUnit(v as GoalTargetUnit)}
-                    >
-                      <SelectTrigger className="w-30">
-                        <SelectValue />
-                      </SelectTrigger>
+              <FormField
+                control={form.control}
+                name="period"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Period</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger className="w-full">
+                          <SelectValue />
+                        </SelectTrigger>
+                      </FormControl>
                       <SelectContent>
-                        {Object.values(GoalTargetUnit).map((unit) => (
-                          <SelectItem key={unit} value={unit}>
-                            {capitalize(unit)}
+                        {Object.values(Period).map((p) => (
+                          <SelectItem key={p} value={p}>
+                            {capitalize(p)}
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
-                  )}
-                </div>
-              </div>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="targetType"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Track By</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger className="w-full">
+                          <SelectValue />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {Object.values(GoalTargetType).map((type) => (
+                          <SelectItem key={type} value={type}>
+                            {capitalize(type)}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="targetValue"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="capitalize">{period} Target</FormLabel>
+                    <div className="flex gap-2">
+                      <FormControl>
+                        <Input type="number" {...field} />
+                      </FormControl>
+                      {targetType === GoalTargetType.Duration && (
+                        <FormField
+                          control={form.control}
+                          name="targetUnit"
+                          render={({ field: unitField }) => (
+                            <FormItem className="space-y-0 w-32">
+                              <Select
+                                name={unitField.name}
+                                value={unitField.value}
+                                onValueChange={unitField.onChange}
+                              >
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  {Object.values(GoalTargetUnit).map((unit) => (
+                                    <SelectItem key={unit} value={unit}>
+                                      {capitalize(unit)}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </FormItem>
+                          )}
+                        />
+                      )}
+                    </div>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </div>
-          </div>
-          <DialogFooter>
-            <Button type="submit">Save Goal</Button>
-          </DialogFooter>
-        </form>
+
+            <DialogFooter>
+              <Button type="submit">Save Goal</Button>
+            </DialogFooter>
+          </form>
+        </Form>
       </DialogContent>
     </Dialog>
   );

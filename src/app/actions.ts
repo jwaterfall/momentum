@@ -1,17 +1,9 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { asc, desc, eq, getTableColumns, inArray, sql } from "drizzle-orm";
+import { asc, desc, eq, getTableColumns, sql } from "drizzle-orm";
 
-import {
-  GoalTargetType,
-  GoalTargetUnit,
-  Period,
-  TaskPriority,
-  goalLogs,
-  goals,
-  tasks,
-} from "@/db/schema";
+import { CreateGoalInput, CreateTaskInput, goalLogs, goals, tasks } from "@/db/schema";
 import { db } from "@/lib/db";
 
 export async function getGoals(limit: number = 10) {
@@ -38,21 +30,8 @@ export async function getGoals(limit: number = 10) {
   return results;
 }
 
-export async function createGoal(formData: FormData) {
-  const title = formData.get("title") as string;
-  const period = (formData.get("period") as Period) || Period.Weekly;
-  const targetType = formData.get("targetType") as GoalTargetType;
-  const targetUnit = formData.get("targetUnit") as GoalTargetUnit;
-  const targetValue = parseInt(formData.get("targetValue") as string);
-
-  await db.insert(goals).values({
-    title,
-    period,
-    targetType,
-    targetUnit,
-    targetValue,
-  });
-
+export async function createGoal(input: CreateGoalInput) {
+  await db.insert(goals).values(input);
   revalidatePath("/");
 }
 
@@ -74,13 +53,8 @@ export async function getTasks(limit: number = 10) {
     .limit(limit);
 }
 
-export async function createTask(formData: FormData) {
-  const title = formData.get("title") as string;
-  await db.insert(tasks).values({
-    title,
-    priority: formData.get("priority") as TaskPriority,
-  });
-
+export async function createTask(input: CreateTaskInput) {
+  await db.insert(tasks).values(input);
   revalidatePath("/");
 }
 

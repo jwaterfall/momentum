@@ -8,6 +8,8 @@ import {
   text,
   timestamp,
 } from "drizzle-orm/pg-core";
+import { createInsertSchema } from "drizzle-zod";
+import { z } from "zod";
 
 export enum Period {
   Daily = "daily",
@@ -56,6 +58,16 @@ export const goals = pgTable("goals", {
 export type Goal = typeof goals.$inferSelect;
 export type NewGoal = typeof goals.$inferInsert;
 
+export const createGoalSchema = createInsertSchema(goals, {
+  title: (schema) => schema.min(1, "Title is required"),
+  targetValue: z.coerce.number().min(1, "Target must be at least 1"),
+  period: z.enum(Period),
+  targetType: z.enum(GoalTargetType).optional(),
+  targetUnit: z.enum(GoalTargetUnit).optional(),
+});
+
+export type CreateGoalInput = z.infer<typeof createGoalSchema>;
+
 export const goalLogs = pgTable("goal_logs", {
   id: serial("id").primaryKey(),
   goalId: integer("goal_id").references(() => goals.id),
@@ -79,3 +91,10 @@ export const tasks = pgTable("tasks", {
 
 export type Task = typeof tasks.$inferSelect;
 export type NewTask = typeof tasks.$inferInsert;
+
+export const createTaskSchema = createInsertSchema(tasks, {
+  title: (schema) => schema.min(1, "Title is required"),
+  priority: z.enum(TaskPriority).optional(),
+});
+
+export type CreateTaskInput = z.infer<typeof createTaskSchema>;

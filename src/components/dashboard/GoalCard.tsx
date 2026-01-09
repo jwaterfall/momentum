@@ -35,6 +35,8 @@ export function GoalCard({ goal }: { goal: GoalWithProgress }) {
     }
   };
 
+  const isDuration = goal.targetType === GoalTargetType.Duration;
+
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -52,20 +54,22 @@ export function GoalCard({ goal }: { goal: GoalWithProgress }) {
         </div>
         <div className="flex gap-2">
           <div className="flex w-full gap-2">
-            {goal.targetType === GoalTargetType.Duration && (
+            {isDuration && (
               <Input
                 type="number"
-                value={duration}
+                value={duration || ""}
                 placeholder={goal.targetUnit ? capitalize(goal.targetUnit) : undefined}
                 onChange={(e) => setDuration(parseFloat(e.target.value))}
               />
             )}
             <Button
               variant="secondary"
-              className={goal.targetType === GoalTargetType.Count ? "w-full" : ""}
-              onClick={() =>
-                logGoalProgress(goal.id, goal.targetType === GoalTargetType.Duration ? duration : 1)
-              }
+              className={isDuration ? "" : "w-full"}
+              disabled={isDuration ? !duration : false}
+              onClick={() => {
+                logGoalProgress(goal.id, isDuration ? duration : 1);
+                setDuration(undefined);
+              }}
             >
               <Plus />
               Log
