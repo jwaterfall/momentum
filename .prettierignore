@@ -1,0 +1,12 @@
+
+node_modules
+.next
+build
+dist
+drizzle
+
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+.env
+.env.local
