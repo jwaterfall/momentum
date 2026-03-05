@@ -6,7 +6,7 @@ import { Check, ChevronDown, ChevronUp, Equal } from "lucide-react";
 import { completeTask } from "@/app/actions";
 import { Button } from "@/components/ui/button";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Task, TaskPriority } from "@/db/schema";
+import { Task, TaskPriority } from "../../db/schema";
 
 export function TaskCard({ task }: { task: Task }) {
   const getPriorityIcon = () => {

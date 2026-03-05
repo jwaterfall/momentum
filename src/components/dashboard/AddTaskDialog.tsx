@@ -32,7 +32,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { CreateTaskInput, TaskPriority, createTaskSchema } from "@/db/schema";
+import { CreateTaskInput, TaskPriority, createTaskSchema } from "../../db/schema";
 import { capitalize } from "@/lib/utils";
 
 export function AddTaskDialog() {

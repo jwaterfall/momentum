@@ -38,7 +38,7 @@ import {
   GoalTargetUnit,
   Period,
   createGoalSchema,
-} from "@/db/schema";
+} from "../../db/schema";
 import { capitalize } from "@/lib/utils";
 
 export function AddGoalDialog() {
