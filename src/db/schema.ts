@@ -61,9 +61,9 @@ export type NewGoal = typeof goals.$inferInsert;
 export const createGoalSchema = createInsertSchema(goals, {
   title: (schema) => schema.min(1, "Title is required"),
   targetValue: z.coerce.number().min(1, "Target must be at least 1"),
-  period: z.enum(Period),
-  targetType: z.enum(GoalTargetType).optional(),
-  targetUnit: z.enum(GoalTargetUnit).optional(),
+  period: z.nativeEnum(Period),
+  targetType: z.nativeEnum(GoalTargetType).optional(),
+  targetUnit: z.nativeEnum(GoalTargetUnit).optional(),
 });
 
 export type CreateGoalInput = z.infer<typeof createGoalSchema>;
@@ -94,7 +94,7 @@ export type NewTask = typeof tasks.$inferInsert;
 
 export const createTaskSchema = createInsertSchema(tasks, {
   title: (schema) => schema.min(1, "Title is required"),
-  priority: z.enum(TaskPriority).optional(),
+  priority: z.nativeEnum(TaskPriority).optional(),
 });
 
 export type CreateTaskInput = z.infer<typeof createTaskSchema>;
