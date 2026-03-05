@@ -32,14 +32,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { capitalize } from "@/lib/utils";
+
 import {
   CreateGoalInput,
   GoalTargetType,
   GoalTargetUnit,
   Period,
   createGoalSchema,
-} from "../../db/schema";
-import { capitalize } from "@/lib/utils";
+} from "../db/schema";
 
 export function AddGoalDialog() {
   const [open, setOpen] = useState(false);

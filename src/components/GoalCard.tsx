@@ -8,8 +8,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
-import { Goal, GoalTargetType, Period } from "../../db/schema";
 import { capitalize } from "@/lib/utils";
+
+import { Goal, GoalTargetType, Period } from "../db/schema";
 
 type GoalWithProgress = Goal & {
   progress: number;

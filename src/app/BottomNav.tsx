@@ -40,8 +40,8 @@ export function BottomNav() {
       <NavItem icon={BarChart2} href="/stats">
         Stats
       </NavItem>
-      <NavItem icon={User} href="/profile">
-        Profile
+      <NavItem icon={User} href="/account/settings">
+        Account
       </NavItem>
     </div>
   );

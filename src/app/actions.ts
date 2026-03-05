@@ -3,8 +3,9 @@
 import { revalidatePath } from "next/cache";
 import { asc, desc, eq, getTableColumns, sql } from "drizzle-orm";
 
-import { CreateGoalInput, CreateTaskInput, goalLog, goal, task } from "../db/schema";
 import { db } from "@/lib/db";
+
+import { CreateGoalInput, CreateTaskInput, goal, goalLog, task } from "../db/schema";
 
 export async function getGoals(limit: number = 10) {
   const results = await db

@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@import "@daveyplate/better-auth-ui/css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -117,7 +118,7 @@
   --chart-3: var(--palette-3);
   --chart-4: var(--palette-4);
   --chart-5: var(--palette-5);
-  --sidebar: oklch(0.205 0 0);
+  --sidebar: oklch(12.9% 0.042 264.695);
   --sidebar-foreground: oklch(0.985 0 0);
   --sidebar-primary: oklch(0.488 0.243 264.376);
   --sidebar-primary-foreground: oklch(0.985 0 0);
