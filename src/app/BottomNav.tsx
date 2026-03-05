@@ -40,7 +40,7 @@ export function BottomNav() {
       <NavItem icon={BarChart2} href="/stats">
         Stats
       </NavItem>
-      <NavItem icon={User} href="/account/settings">
+      <NavItem icon={User} href="/account">
         Account
       </NavItem>
     </div>

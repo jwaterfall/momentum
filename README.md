@@ -29,27 +29,29 @@ DATABASE_URL="postgres://user:password@host:port/database"
 1. Install dependencies:
 
    ```bash
-   npm install
+   pnpm install
    ```
 
-2. Set up the database schema:
+2. Set up the database:
 
    ```bash
-   npx drizzle-kit generate
-   npx drizzle-kit push
+   pnpm run drizzle:migrate
    ```
 
 3. Run the development server:
    ```bash
-   npm run dev
+   pnpm run dev
    ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
 ## Scripts
 
-- `npm run dev`: Starts the development server.
-- `npm run build`: Builds the application for production.
-- `npm run start`: Starts the production server.
-- `npm run lint`: Runs ESLint.
-- `npm run format`: Formats code using Prettier.
+- `pnpm run dev`: Starts the development server.
+- `pnpm run build`: Builds the application for production.
+- `pnpm run start`: Starts the production server.
+- `pnpm run lint`: Runs ESLint.
+- `pnpm run format`: Formats code using Prettier.
+- `pnpm run better-auth:generate-schema`: Generates the Better Auth schema file.
+- `pnpm run drizzle:generate`: Generates database migrations.
+- `pnpm run drizzle:migrate`: Runs database migrations.

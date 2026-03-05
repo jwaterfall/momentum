@@ -118,8 +118,8 @@
   --chart-3: var(--palette-3);
   --chart-4: var(--palette-4);
   --chart-5: var(--palette-5);
-  --sidebar: oklch(12.9% 0.042 264.695);
-  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar: oklch(20.8% 0.042 265.755);
+  --sidebar-foreground: oklch(98.4% 0.003 247.858);
   --sidebar-primary: oklch(0.488 0.243 264.376);
   --sidebar-primary-foreground: oklch(0.985 0 0);
   --sidebar-accent: oklch(0.269 0 0);

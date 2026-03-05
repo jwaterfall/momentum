@@ -17,6 +17,7 @@ export function Providers({ children }: { children: ReactNode }) {
       replace={router.replace}
       onSessionChange={() => router.refresh()}
       Link={Link}
+      gravatar={true}
     >
       {children}
     </AuthUIProvider>
