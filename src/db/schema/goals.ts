@@ -68,7 +68,7 @@ export type NewGoalLog = typeof goalLog.$inferInsert;
 
 export const createGoalSchema = createInsertSchema(goal, {
   title: (schema) => schema.min(1, "Title is required"),
-  targetValue: z.number().min(1, "Target must be at least 1"),
+  targetValue: z.coerce.number<number>().min(1, "Target must be at least 1"),
   period: z.enum(Period),
   targetType: z.enum(GoalTargetType).optional(),
   targetUnit: z.enum(GoalTargetUnit).optional(),
