@@ -20,8 +20,8 @@ export const task = pgTable("task", {
   title: text("title").notNull(),
   completed: boolean("completed").default(false),
   priority: taskPriorityEnum("priority").default(TaskPriority.Normal),
-  createdAt: timestamp("created_at").defaultNow(),
-  completedAt: timestamp("completed_at"),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+  completedAt: timestamp("completed_at", { withTimezone: true }),
 });
 
 export type Task = typeof task.$inferSelect;

@@ -46,7 +46,7 @@ export const goal = pgTable("goal", {
   targetValue: integer("target_value").notNull(),
   targetType: goalTargetTypeEnum("target_type").default(GoalTargetType.Count),
   targetUnit: goalTargetUnitEnum("target_unit"),
-  createdAt: timestamp("created_at").defaultNow(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
   archived: boolean("archived").default(false),
 });
 
@@ -56,7 +56,7 @@ export const goalLog = pgTable("goal_log", {
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
   goalId: integer("goal_id").references(() => goal.id, { onDelete: "cascade" }),
-  date: timestamp("date").defaultNow(),
+  date: timestamp("date", { withTimezone: true }).defaultNow(),
   value: decimal("value").notNull(),
 });
 
