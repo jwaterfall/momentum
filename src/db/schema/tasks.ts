@@ -1,6 +1,4 @@
 import { boolean, pgEnum, pgTable, serial, text, timestamp } from "drizzle-orm/pg-core";
-import { createInsertSchema } from "drizzle-zod";
-import { z } from "zod";
 
 import { user } from "./auth";
 
@@ -26,10 +24,3 @@ export const task = pgTable("task", {
 
 export type Task = typeof task.$inferSelect;
 export type NewTask = typeof task.$inferInsert;
-
-export const createTaskSchema = createInsertSchema(task, {
-  title: (schema) => schema.min(1, "Title is required"),
-  priority: z.enum(TaskPriority).optional(),
-}).omit({ userId: true });
-
-export type CreateTaskInput = z.infer<typeof createTaskSchema>;

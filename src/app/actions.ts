@@ -4,10 +4,12 @@ import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { and, asc, desc, eq, getTableColumns, sql } from "drizzle-orm";
 
+import type { GoalFormInput } from "@/components/GoalFormDialog";
+import type { TaskFormInput } from "@/components/TaskFormDialog";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 
-import { CreateGoalInput, CreateTaskInput, goal, goalLog, task } from "../db/schema";
+import { goal, goalLog, task } from "../db/schema";
 
 async function getUserId() {
   const session = await auth.api.getSession({
@@ -48,7 +50,7 @@ export async function getGoals(limit: number = 10) {
   return results;
 }
 
-export async function createGoal(input: CreateGoalInput) {
+export async function createGoal(input: GoalFormInput) {
   try {
     const userId = await getUserId();
     await db.insert(goal).values({ ...input, userId });
@@ -62,7 +64,6 @@ export async function createGoal(input: CreateGoalInput) {
 export async function logGoalProgress(goalId: number, value: number = 1) {
   const userId = await getUserId();
 
-  // Verify the goal belongs to the user
   const goalRecord = await db
     .select()
     .from(goal)
@@ -82,6 +83,25 @@ export async function logGoalProgress(goalId: number, value: number = 1) {
   revalidatePath("/");
 }
 
+export async function updateGoal(id: number, input: GoalFormInput) {
+  const userId = await getUserId();
+
+  await db
+    .update(goal)
+    .set(input)
+    .where(and(eq(goal.id, id), eq(goal.userId, userId)));
+
+  revalidatePath("/");
+}
+
+export async function deleteGoal(id: number) {
+  const userId = await getUserId();
+
+  await db.delete(goal).where(and(eq(goal.id, id), eq(goal.userId, userId)));
+
+  revalidatePath("/");
+}
+
 export async function getTasks(limit: number = 10) {
   const userId = await getUserId();
 
@@ -93,7 +113,7 @@ export async function getTasks(limit: number = 10) {
     .limit(limit);
 }
 
-export async function createTask(input: CreateTaskInput) {
+export async function createTask(input: TaskFormInput) {
   try {
     const userId = await getUserId();
     await db.insert(task).values({ ...input, userId });
@@ -114,6 +134,25 @@ export async function completeTask(id: number) {
       completedAt: new Date(),
     })
     .where(and(eq(task.id, id), eq(task.userId, userId)));
+
+  revalidatePath("/");
+}
+
+export async function updateTask(id: number, input: TaskFormInput) {
+  const userId = await getUserId();
+
+  await db
+    .update(task)
+    .set(input)
+    .where(and(eq(task.id, id), eq(task.userId, userId)));
+
+  revalidatePath("/");
+}
+
+export async function deleteTask(id: number) {
+  const userId = await getUserId();
+
+  await db.delete(task).where(and(eq(task.id, id), eq(task.userId, userId)));
 
   revalidatePath("/");
 }

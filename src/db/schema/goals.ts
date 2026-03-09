@@ -8,8 +8,6 @@ import {
   text,
   timestamp,
 } from "drizzle-orm/pg-core";
-import { createInsertSchema } from "drizzle-zod";
-import { z } from "zod";
 
 import { user } from "./auth";
 
@@ -65,13 +63,3 @@ export type NewGoal = typeof goal.$inferInsert;
 
 export type GoalLog = typeof goalLog.$inferSelect;
 export type NewGoalLog = typeof goalLog.$inferInsert;
-
-export const createGoalSchema = createInsertSchema(goal, {
-  title: (schema) => schema.min(1, "Title is required"),
-  targetValue: z.coerce.number<number>().min(1, "Target must be at least 1"),
-  period: z.enum(Period),
-  targetType: z.enum(GoalTargetType).optional(),
-  targetUnit: z.enum(GoalTargetUnit).optional(),
-}).omit({ userId: true });
-
-export type CreateGoalInput = z.infer<typeof createGoalSchema>;
