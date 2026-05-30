@@ -1,0 +1,10 @@
+# Nixpacks pins corepack@0.24.1, which is too old to run modern pnpm — it loads
+# pnpm's .cjs via the `vm` module without a dynamic-import callback and throws
+# ERR_VM_DYNAMIC_IMPORT_CALLBACK_MISSING. Install a current corepack first so it
+# can honour the `packageManager` version in package.json.
+[phases.install]
+cmds = [
+  "npm install -g corepack@latest",
+  "corepack enable",
+  "pnpm install --frozen-lockfile",
+]
