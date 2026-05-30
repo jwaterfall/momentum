@@ -33,7 +33,7 @@ A `DATABASE_URL` (PostgreSQL) must be set in `.env.local` for the app, Drizzle, 
 
 - **Next.js 16** (App Router, React 19, Server Components/Actions) — note Next 16 renames middleware to **`src/proxy.ts`**.
 - **Drizzle ORM** over `node-postgres` (`pg` Pool).
-- **Better Auth** (email/password + username plugin) with `@daveyplate/better-auth-ui` for prebuilt auth/account UI.
+- **Better Auth** (email/password + username plugin). Auth and account UI are hand-coded against the Better Auth client (`src/lib/auth-client.ts`, with `usernameClient`) and server API — no `better-auth-ui`.
 - **Tailwind v4** + **shadcn/ui built on Base UI** (`@base-ui/react`) — generated from the `base-maia` style / `mist` base-color preset (see `components.json`); components live in `src/components/ui/`. App is currently hard-coded to dark mode in `layout.tsx`. Fonts: Inter (body), Merriweather (headings, via `font-heading`), Geist Mono.
 - Forms: `react-hook-form` + `zod` (+ `drizzle-zod`).
 
@@ -50,14 +50,14 @@ Goal progress is **derived, not stored**: `getGoals()` computes each goal's prog
 
 **Auth flow:**
 
-- `src/proxy.ts` optimistically redirects unauthenticated requests to `/auth/sign-in` based on the session cookie (it is _not_ a security boundary — see the comment in the file; real checks happen in server actions and `PrivateRoute`).
+- `src/proxy.ts` optimistically redirects unauthenticated requests to `/auth/sign-in` based on the session cookie (it is _not_ a security boundary — see the comment in the file; real checks happen in server actions and `requirePageAuth()`).
 - `src/lib/auth.ts` is the server-side Better Auth instance; `src/lib/auth-client.ts` is the React client. The catch-all route `src/app/api/auth/[...all]/route.ts` handles all auth endpoints.
-- `<PrivateRoute>` wraps protected pages, gating content on `SignedIn` and redirecting otherwise.
+- `requirePageAuth()` (`src/utils/require-page-auth.ts`) guards protected pages: it reads the session server-side and redirects to `/auth/sign-in` if absent. Sign-in/sign-up are explicit pages under `(without-nav)/auth/`.
 
 **Routing** uses App Router route groups:
 
 - `src/app/(with-nav)/` — authenticated pages with the bottom nav (`/` dashboard, `/stats`, `/account`).
-- `src/app/(without-nav)/` — the auth pages (`/auth/[path]`).
+- `src/app/(without-nav)/` — the auth pages (`/auth/sign-in`, `/auth/sign-up`).
 
 **Schema** lives in `src/db/schema/` (`goals.ts`, `tasks.ts`, `auth.ts`, re-exported via `index.ts`). Postgres enums are defined as TS `enum`s wrapped in `pgEnum`. `auth.ts` is generated — don't hand-edit it; change Better Auth config and regenerate. Drizzle infers `Goal`/`Task` types via `$inferSelect`/`$inferInsert`.
 

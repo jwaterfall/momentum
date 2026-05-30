@@ -4,7 +4,6 @@ import { Geist, Geist_Mono, Inter, Merriweather } from "next/font/google";
 import { cn } from "@/lib/utils";
 
 import "./globals.css";
-import { Providers } from "./providers";
 
 const merriweatherHeading = Merriweather({ subsets: ["latin"], variable: "--font-heading" });
 
@@ -38,9 +37,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased h-screen overflow-hidden`}
       >
-        <Providers>
-          <main>{children}</main>
-        </Providers>
+        <main>{children}</main>
       </body>
     </html>
   );
