@@ -1,13 +1,17 @@
 # Momentum
 
-Momentum is a personal tracking application designed to help you build habits (Goals) and manage responsibilities (Tasks). It emphasizes neutrality and factual logging over judgment.
+Momentum is a personal tracking application built around three kinds of resource. It emphasizes neutrality and factual logging over judgment.
+
+## Resources
+
+- **Goals**: Things you gradually work towards over a recurring period — e.g. "Exercise 3 times a week" or "Play piano for 4 hours a month". Supports daily, weekly, monthly, and yearly periods, with count- or duration-based targets. Logging progress accumulates towards the target.
+- **Tasks**: One-off checklist items you mark off when done. Carry a priority and can optionally have dates.
+- **Streaks**: Things you want to _avoid_ doing — e.g. "Don't drink". You log a slip when you break the streak; Momentum just records what happened rather than guilt-tripping.
 
 ## Features
 
-- **Goal Tracking**: Track recurring practices like "Practice piano" or "Read a book". Supports daily, weekly, monthly, and yearly periods.
-- **Task Management**: Manage one-off responsibilities with priority levels.
 - **Progress Monitoring**: Visual progress bars and completion stats.
-- **Neutral Design**: Focus on "what happened" rather than streaks or guilt.
+- **Neutral Design**: Focus on "what happened" rather than guilt.
 
 ## Getting Started
 
