@@ -14,12 +14,12 @@ export default async function Home() {
   return (
     <div className="p-6 space-y-6">
       <header className="space-y-1">
-        <h1 className="text-2xl font-bold tracking-tight text-foreground">Momentum</h1>
+        <h1 className="text-2xl font-heading font-semibold text-foreground">Momentum</h1>
         <p className="text-muted-foreground text-sm">Your personal growth dashboard</p>
       </header>
       <section className="space-y-3">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-foreground">Goals</h2>
+          <h2 className="text-lg font-heading font-semibold text-foreground">Goals</h2>
           <AddGoalDialog />
         </div>
         <div className="space-y-3">
@@ -34,7 +34,7 @@ export default async function Home() {
       </section>
       <section className="space-y-3">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-foreground">Tasks</h2>
+          <h2 className="text-lg font-heading font-semibold text-foreground">Tasks</h2>
           <AddTaskDialog />
         </div>
         {tasks.length === 0 ? (

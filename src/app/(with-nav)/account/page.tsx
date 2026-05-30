@@ -16,7 +16,7 @@ export default async function AccountPage() {
   return (
     <div className="p-6 space-y-6">
       <header className="space-y-1">
-        <h1 className="text-2xl font-bold tracking-tight text-foreground">Account Settings</h1>
+        <h1 className="text-2xl font-heading font-semibold text-foreground">Account Settings</h1>
         <p className="text-muted-foreground text-sm">Manage your account and preferences</p>
       </header>
 

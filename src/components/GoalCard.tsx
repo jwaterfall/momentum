@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { Ellipsis, Pencil, Plus, Trash2 } from "lucide-react";
 
 import { deleteGoal, logGoalProgress } from "@/app/actions";
@@ -14,7 +15,6 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -35,9 +35,14 @@ type GoalWithProgress = Goal & {
 };
 
 export function GoalCard({ goal }: { goal: GoalWithProgress }) {
+  const router = useRouter();
   const [duration, setDuration] = useState<number>();
+  const [editOpen, setEditOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [isPending, startTransition] = useTransition();
 
   const percentage = Math.min((goal.progress / goal.targetValue) * 100, 100);
+  const isDuration = goal.targetType === GoalTargetType.Duration;
 
   const getPeriodLabel = (p?: Period) => {
     switch (p) {
@@ -54,67 +59,58 @@ export function GoalCard({ goal }: { goal: GoalWithProgress }) {
     }
   };
 
-  const isDuration = goal.targetType === GoalTargetType.Duration;
+  const logProgress = () => {
+    startTransition(async () => {
+      await logGoalProgress(goal.id, isDuration ? (duration ?? 0) : 1);
+      setDuration(undefined);
+      router.refresh();
+    });
+  };
+
+  const handleDelete = () => {
+    startTransition(async () => {
+      await deleteGoal(goal.id);
+      setDeleteOpen(false);
+      router.refresh();
+    });
+  };
 
   return (
-    <Card>
-      <CardHeader className="flex flex-row justify-between gap-2 pb-2">
-        <div className="flex-1 min-w-0">
-          <CardTitle className="text-lg font-medium">{goal.title}</CardTitle>
-          <CardDescription>
-            {goal.progress}/{goal.targetValue}{" "}
-            {goal.targetType === GoalTargetType.Duration ? goal.targetUnit : "times"}{" "}
-            {getPeriodLabel(goal.period)}
-          </CardDescription>
-        </div>
-        <DropdownMenu>
-          <DropdownMenuTrigger
-            render={<Button variant="ghost" size="icon" className="size-8 shrink-0" />}
-          >
-            <Ellipsis className="h-4 w-4" />
-            <span className="sr-only">Goal options</span>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <GoalFormDialog goal={goal}>
-              <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+    <>
+      <Card>
+        <CardHeader className="flex flex-row justify-between gap-2 pb-2">
+          <div className="flex-1 min-w-0">
+            <CardTitle className="text-lg font-medium">{goal.title}</CardTitle>
+            <CardDescription>
+              {goal.progress}/{goal.targetValue}{" "}
+              {goal.targetType === GoalTargetType.Duration ? goal.targetUnit : "times"}{" "}
+              {getPeriodLabel(goal.period)}
+            </CardDescription>
+          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              render={<Button variant="ghost" size="icon" className="size-8 shrink-0" />}
+            >
+              <Ellipsis className="h-4 w-4" />
+              <span className="sr-only">Goal options</span>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => setEditOpen(true)}>
                 <Pencil className="h-4 w-4" />
                 Edit
               </DropdownMenuItem>
-            </GoalFormDialog>
-            <AlertDialog>
-              <AlertDialogTrigger
-                render={
-                  <DropdownMenuItem variant="destructive" onSelect={(e) => e.preventDefault()} />
-                }
-              >
+              <DropdownMenuItem variant="destructive" onClick={() => setDeleteOpen(true)}>
                 <Trash2 className="h-4 w-4" />
                 Delete
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Delete goal?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    This will permanently delete &quot;{goal.title}&quot; and all its progress. This
-                    action cannot be undone.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction variant="destructive" onClick={() => deleteGoal(goal.id)}>
-                    Delete
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </CardHeader>
-      <CardContent>
-        <div className="flex items-center justify-between gap-2 mb-4">
-          <Progress value={percentage} />
-          <p>{Math.round(percentage)}%</p>
-        </div>
-        <div className="flex gap-2">
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-between gap-2 mb-4">
+            <Progress value={percentage} className="flex-1" />
+            <p>{Math.round(percentage)}%</p>
+          </div>
           <div className="flex w-full gap-2">
             {isDuration && (
               <Input
@@ -127,18 +123,35 @@ export function GoalCard({ goal }: { goal: GoalWithProgress }) {
             <Button
               variant="secondary"
               className={isDuration ? "" : "w-full"}
-              disabled={isDuration ? duration == null : false}
-              onClick={() => {
-                logGoalProgress(goal.id, isDuration ? (duration ?? 0) : 1);
-                setDuration(undefined);
-              }}
+              disabled={(isDuration && duration == null) || isPending}
+              onClick={logProgress}
             >
               <Plus />
               Log
             </Button>
           </div>
-        </div>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+
+      <GoalFormDialog goal={goal} open={editOpen} onOpenChange={setEditOpen} />
+
+      <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete goal?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete &quot;{goal.title}&quot; and all its progress. This
+              action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction variant="destructive" disabled={isPending} onClick={handleDelete}>
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }
