@@ -8,7 +8,7 @@ Momentum is a personal tracking app built around three resource types, all delib
 
 - **Goals** — things you gradually work towards over a recurring period (e.g. "exercise 3×/week", "piano 4h/month"). Have a target (count or duration) and a period; logging adds progress towards the target.
 - **Tasks** — one-off checklist items you mark complete. Have a priority; can optionally carry dates.
-- **Streaks** — things you want to _avoid_ doing (e.g. "don't drink"); you log a slip when you break the streak. **Not yet implemented** — only Goals and Tasks exist in the schema today. When adding Streaks, follow the existing Goal/Task patterns below (schema in `src/db/schema/`, a `src/features/streaks/` folder with the `services.ts`/`actions.ts` split, all user-scoped).
+- **Streaks** — things you want to _avoid_ doing (e.g. "don't drink"); you log a slip when you break the streak. Each streak derives its current length (days since the last slip, or since you started if none) and total slips — neutral, factual framing rather than guilt. Lives in `src/features/streaks/`, schema in `src/db/schema/streaks.ts`.
 
 ## Commands
 
@@ -46,7 +46,7 @@ Two invariants enforced throughout the data layer:
 1. **Every service and action calls `getUserId()` first** (`src/utils/get-user-id.ts` — reads the Better Auth session from request headers, throws `Unauthorized` if absent) and scopes all queries with `eq(table.userId, userId)`. There is no row-level security in the DB.
 2. **Mutations call `revalidatePath("/")`** to refresh the cached server-rendered page.
 
-Goal progress is **derived, not stored**: `getGoals()` (`src/features/goals/services.ts`) computes each goal's progress with a correlated SQL subquery that sums `goal_log.value` over the current period window (`date_trunc` by daily/weekly/monthly/yearly). Logging progress inserts a `goalLog` row rather than mutating the goal.
+Goal progress is **derived, not stored**: `getGoals()` (`src/features/goals/services.ts`) computes each goal's progress with a correlated SQL subquery that sums `goal_log.value` over the current period window (`date_trunc` by daily/weekly/monthly/yearly). Logging progress inserts a `goalLog` row rather than mutating the goal. Streak stats are derived the same way: `getStreaks()` (`src/features/streaks/services.ts`) counts `streak_log` rows and takes the latest slip date per streak; "current streak days" is computed from the last slip (or `created_at` if none). Logging a slip inserts a `streakLog` row.
 
 **Auth flow:**
 
@@ -59,7 +59,7 @@ Goal progress is **derived, not stored**: `getGoals()` (`src/features/goals/serv
 - `src/app/(with-nav)/` — authenticated pages with the bottom nav (`/` dashboard, `/stats`, `/account`).
 - `src/app/(without-nav)/` — the auth pages (`/auth/sign-in`, `/auth/sign-up`).
 
-**Schema** lives in `src/db/schema/` (`goals.ts`, `tasks.ts`, `auth.ts`, re-exported via `index.ts`). Postgres enums are defined as TS `enum`s wrapped in `pgEnum`. `auth.ts` is generated — don't hand-edit it; change Better Auth config and regenerate. Drizzle infers `Goal`/`Task` types via `$inferSelect`/`$inferInsert`.
+**Schema** lives in `src/db/schema/` (`goals.ts`, `tasks.ts`, `streaks.ts`, `auth.ts`, re-exported via `index.ts`). Postgres enums are defined as TS `enum`s wrapped in `pgEnum`. `auth.ts` is generated — don't hand-edit it; change Better Auth config and regenerate. Drizzle infers `Goal`/`Task`/`Streak` types via `$inferSelect`/`$inferInsert`.
 
 ## Development workflow
 
