@@ -6,7 +6,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
-import { createGoal, updateGoal } from "@/app/actions";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -34,9 +33,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Goal, GoalTargetType, GoalTargetUnit, Period, goal } from "@/db/schema";
 import { capitalize } from "@/lib/utils";
 
-import { Goal, GoalTargetType, GoalTargetUnit, Period, goal } from "../db/schema";
+import { createGoal, updateGoal } from "../actions";
 
 const goalFormSchema = createInsertSchema(goal, {
   title: (schema) => schema.min(1, "Title is required"),

@@ -1,5 +1,3 @@
-"use client";
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const QUOTES = [
@@ -16,7 +14,7 @@ const QUOTES = [
     author: "Winston Churchill",
   },
   {
-    text: "Believe you can and you&apos;re halfway there.",
+    text: "Believe you can and you're halfway there.",
     author: "Theodore Roosevelt",
   },
   {

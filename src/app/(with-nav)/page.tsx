@@ -1,11 +1,13 @@
-import { AddGoalDialog } from "@/components/AddGoalDialog";
-import { AddTaskDialog } from "@/components/AddTaskDialog";
-import { DailyQuote } from "@/components/DailyQuote";
-import { GoalCard } from "@/components/GoalCard";
-import { TaskCard } from "@/components/TaskCard";
+import { DailyQuote } from "@/components/daily-quote";
+import { EmptyState } from "@/components/empty-state";
+import { PageHeader } from "@/components/page-header";
+import { AddGoalDialog } from "@/features/goals/components/add-goal-dialog";
+import { GoalCard } from "@/features/goals/components/goal-card";
+import { getGoals } from "@/features/goals/services";
+import { AddTaskDialog } from "@/features/tasks/components/add-task-dialog";
+import { TaskCard } from "@/features/tasks/components/task-card";
+import { getTasks } from "@/features/tasks/services";
 import { requirePageAuth } from "@/utils/require-page-auth";
-
-import { getGoals, getTasks } from "../actions";
 
 export default async function Home() {
   await requirePageAuth();
@@ -13,10 +15,7 @@ export default async function Home() {
 
   return (
     <div className="p-6 space-y-6">
-      <header className="space-y-1">
-        <h1 className="text-2xl font-heading font-semibold text-foreground">Momentum</h1>
-        <p className="text-muted-foreground text-sm">Your personal growth dashboard</p>
-      </header>
+      <PageHeader title="Momentum" description="Your personal growth dashboard" />
       <section className="space-y-3">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-heading font-semibold text-foreground">Goals</h2>
@@ -24,9 +23,7 @@ export default async function Home() {
         </div>
         <div className="space-y-3">
           {goals.length === 0 ? (
-            <div className="p-6 border border-dashed rounded-xl text-center text-muted-foreground text-sm">
-              No goals yet.
-            </div>
+            <EmptyState>No goals yet.</EmptyState>
           ) : (
             goals.map((goal) => <GoalCard key={goal.id} goal={goal} />)
           )}
@@ -38,9 +35,7 @@ export default async function Home() {
           <AddTaskDialog />
         </div>
         {tasks.length === 0 ? (
-          <div className="p-6 border border-dashed rounded-xl text-center text-muted-foreground text-sm">
-            No tasks yet.
-          </div>
+          <EmptyState>No tasks yet.</EmptyState>
         ) : (
           tasks.map((task) => <TaskCard key={task.id} task={task} />)
         )}

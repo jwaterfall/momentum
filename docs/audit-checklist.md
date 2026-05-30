@@ -4,7 +4,7 @@ A defensive sweep against the conventions in [`CLAUDE.md`](../CLAUDE.md), run **
 
 It audits **code patterns and judgment calls** — the things a linter can't reliably catch. Genuinely mechanical rules should be enforced by ESLint / a pre-commit hook instead (see [Mechanize these](#mechanize-these-dont-audit-by-hand)); don't spend audit attention on them once they're wired up.
 
-> **Repo binding (momentum).** The cross-app stack is constant — Better Auth, Next.js App Router, Drizzle, shadcn/Base UI — so the rules apply as written. The one current divergence: momentum hasn't adopted the `features/{name}/` + `services.ts`/`actions.ts` split; all data access lives in `src/app/actions.ts`. Until an area is migrated, apply the data-layer rules to `actions.ts` and skip **A3**. Protected pages live under `src/app/(with-nav)/**`.
+> **Repo binding (momentum).** The cross-app stack is constant — Better Auth, Next.js App Router, Drizzle, shadcn/Base UI — so the rules apply as written. Data access lives in `src/features/{name}/` (`services.ts` reads, `actions.ts` mutations); the shared `getUserId()` is in `src/utils/get-user-id.ts`. Protected pages live under `src/app/(with-nav)/**`.
 
 ## How to run it
 
@@ -36,7 +36,7 @@ Each rule lists: **Scope** · **Severity** · **Pattern** · **Allow-list**. Sev
 
 - **Scope:** `features/*/services.ts`, `features/*/actions.ts`.
 - **Pattern:** `services.ts` holds reads and starts with `import "server-only"`; `actions.ts` holds mutations and starts with `"use server"`. Flag queries in `actions.ts` or mutations in `services.ts`.
-- **Allow-list:** repos that haven't adopted the split yet (momentum today) — skip this rule until the area is migrated.
+- **Allow-list:** none — momentum follows the split.
 
 ### A4. `"use client"` is justified [correctness]
 
@@ -56,7 +56,7 @@ Each rule lists: **Scope** · **Severity** · **Pattern** · **Allow-list**. Sev
 
 ### B1. Data shaping leaking into pages/components [consistency]
 
-- **Scope:** pages and components (momentum: `src/app/**/*.tsx`, `src/components/**/*.tsx`).
+- **Scope:** pages and components (momentum: `src/app/**/*.tsx`, `src/components/**/*.tsx`, `src/features/**/*.tsx`).
 - **Pattern:** shaping that the data layer should own — `parseFloat`/`parseInt`, regex over data, conditional `.push` of `[label, value]` tuples, `.filter`/`.map` reshaping, `.toLowerCase`/`.replace`/normalisation over data. The service should return a **render-ready type** so the page just renders.
 - **Allow-list:** simple guards (`if (!data) …`), single-field fallback (`x ?? "—"`), and `format*`/date-display calls — those are presentation, not shaping.
 
@@ -86,7 +86,7 @@ Each rule lists: **Scope** · **Severity** · **Pattern** · **Allow-list**. Sev
 
 ### B6. Components that bundle chrome or fetching instead of staying leaves [consistency]
 
-- **Scope:** feature/shared components (momentum: `src/components/**/*.tsx`).
+- **Scope:** feature/shared components (momentum: `src/components/**/*.tsx`, `src/features/**/components/**/*.tsx`).
 - **Pattern:** a reusable component that owns its own `<section>`/`<header>` heading copy, takes a `title`/`description` copy prop, or fetches its own data. The chrome and the fetch belong in the page; the component should be props-in/render-out.
 - **Allow-list:** genuine layout primitives that carry no feature-specific copy (a generic `PageHeader`, the nav).
 

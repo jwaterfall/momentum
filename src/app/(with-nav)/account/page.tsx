@@ -1,33 +1,29 @@
-import { headers } from "next/headers";
-
-import { DeleteAccountCard } from "@/components/account/DeleteAccountCard";
-import { PasswordCard } from "@/components/account/PasswordCard";
-import { ProfileCard } from "@/components/account/ProfileCard";
-import { type SessionRow, SessionsCard } from "@/components/account/SessionsCard";
+import { PageHeader } from "@/components/page-header";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { Separator } from "@/components/ui/separator";
-import { auth } from "@/lib/auth";
+import { DeleteAccountCard } from "@/features/account/components/delete-account-card";
+import { PasswordCard } from "@/features/account/components/password-card";
+import { ProfileCard } from "@/features/account/components/profile-card";
+import { SessionsCard } from "@/features/account/components/sessions-card";
+import { getAccount } from "@/features/account/services";
 import { requirePageAuth } from "@/utils/require-page-auth";
 
 export default async function AccountPage() {
-  const session = await requirePageAuth();
-  const user = session.user as typeof session.user & { username?: string | null };
-  const sessions = await auth.api.listSessions({ headers: await headers() });
+  await requirePageAuth();
+  const { profile, sessions } = await getAccount();
 
   return (
     <div className="p-6 space-y-6">
-      <header className="space-y-1">
-        <h1 className="text-2xl font-heading font-semibold text-foreground">Account Settings</h1>
-        <p className="text-muted-foreground text-sm">Manage your account and preferences</p>
-      </header>
+      <PageHeader
+        title="Account Settings"
+        description="Manage your account and preferences"
+        action={<ThemeToggle />}
+      />
 
       <div className="space-y-4">
-        <ProfileCard
-          name={user.name ?? ""}
-          username={user.username ?? ""}
-          email={user.email ?? ""}
-        />
+        <ProfileCard {...profile} />
         <PasswordCard />
-        <SessionsCard sessions={sessions as SessionRow[]} currentToken={session.session.token} />
+        <SessionsCard sessions={sessions} />
         <DeleteAccountCard />
       </div>
 

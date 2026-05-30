@@ -2,43 +2,24 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Ellipsis, Pencil, Plus, Trash2 } from "lucide-react";
+import { Plus } from "lucide-react";
 
-import { deleteGoal, logGoalProgress } from "@/app/actions";
-import { GoalFormDialog } from "@/components/GoalFormDialog";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import { EntityActions } from "@/components/entity-actions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
+import { GoalTargetType, Period } from "@/db/schema";
 import { capitalize } from "@/lib/utils";
 
-import { Goal, GoalTargetType, Period } from "../db/schema";
-
-type GoalWithProgress = Goal & {
-  progress: number;
-};
+import { deleteGoal, logGoalProgress } from "../actions";
+import type { GoalWithProgress } from "../services";
+import { GoalFormDialog } from "./goal-form-dialog";
 
 export function GoalCard({ goal }: { goal: GoalWithProgress }) {
   const router = useRouter();
   const [duration, setDuration] = useState<number>();
   const [editOpen, setEditOpen] = useState(false);
-  const [deleteOpen, setDeleteOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
 
   const percentage = Math.min((goal.progress / goal.targetValue) * 100, 100);
@@ -70,7 +51,6 @@ export function GoalCard({ goal }: { goal: GoalWithProgress }) {
   const handleDelete = () => {
     startTransition(async () => {
       await deleteGoal(goal.id);
-      setDeleteOpen(false);
       router.refresh();
     });
   };
@@ -87,24 +67,19 @@ export function GoalCard({ goal }: { goal: GoalWithProgress }) {
               {getPeriodLabel(goal.period)}
             </CardDescription>
           </div>
-          <DropdownMenu>
-            <DropdownMenuTrigger
-              render={<Button variant="ghost" size="icon" className="size-8 shrink-0" />}
-            >
-              <Ellipsis className="h-4 w-4" />
-              <span className="sr-only">Goal options</span>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => setEditOpen(true)}>
-                <Pencil className="h-4 w-4" />
-                Edit
-              </DropdownMenuItem>
-              <DropdownMenuItem variant="destructive" onClick={() => setDeleteOpen(true)}>
-                <Trash2 className="h-4 w-4" />
-                Delete
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <EntityActions
+            label="Goal options"
+            onEdit={() => setEditOpen(true)}
+            onDelete={handleDelete}
+            isDeleting={isPending}
+            deleteTitle="Delete goal?"
+            deleteDescription={
+              <>
+                This will permanently delete &quot;{goal.title}&quot; and all its progress. This
+                action cannot be undone.
+              </>
+            }
+          />
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-between gap-2 mb-4">
@@ -134,24 +109,6 @@ export function GoalCard({ goal }: { goal: GoalWithProgress }) {
       </Card>
 
       <GoalFormDialog goal={goal} open={editOpen} onOpenChange={setEditOpen} />
-
-      <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete goal?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This will permanently delete &quot;{goal.title}&quot; and all its progress. This
-              action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction variant="destructive" disabled={isPending} onClick={handleDelete}>
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </>
   );
 }

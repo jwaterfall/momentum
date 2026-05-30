@@ -1,23 +1,16 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Inter, Merriweather } from "next/font/google";
+import { Geist_Mono, Inter, Merriweather } from "next/font/google";
 
+import { ThemeProvider } from "@/components/theme-provider";
 import { cn } from "@/lib/utils";
 
 import "./globals.css";
 
-const merriweatherHeading = Merriweather({ subsets: ["latin"], variable: "--font-heading" });
-
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
+const merriweatherHeading = Merriweather({ subsets: ["latin"], variable: "--font-heading" });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+const geistMono = Geist_Mono({ subsets: ["latin"], variable: "--font-geist-mono" });
 
 export const metadata: Metadata = {
   title: "Momentum",
@@ -32,12 +25,18 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={cn("dark", "font-sans", inter.variable, merriweatherHeading.variable)}
+      suppressHydrationWarning
+      className={cn("font-sans", inter.variable, merriweatherHeading.variable, geistMono.variable)}
     >
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased h-screen overflow-hidden`}
-      >
-        <main>{children}</main>
+      <body className="antialiased h-screen overflow-hidden">
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <main>{children}</main>
+        </ThemeProvider>
       </body>
     </html>
   );

@@ -8,7 +8,7 @@ Momentum is a personal tracking app built around three resource types, all delib
 
 - **Goals** — things you gradually work towards over a recurring period (e.g. "exercise 3×/week", "piano 4h/month"). Have a target (count or duration) and a period; logging adds progress towards the target.
 - **Tasks** — one-off checklist items you mark complete. Have a priority; can optionally carry dates.
-- **Streaks** — things you want to _avoid_ doing (e.g. "don't drink"); you log a slip when you break the streak. **Not yet implemented** — only Goals and Tasks exist in the schema/actions today. When adding Streaks, follow the existing Goal/Task patterns below (schema in `src/db/schema/`, server actions in `src/app/actions.ts`, all user-scoped).
+- **Streaks** — things you want to _avoid_ doing (e.g. "don't drink"); you log a slip when you break the streak. **Not yet implemented** — only Goals and Tasks exist in the schema today. When adding Streaks, follow the existing Goal/Task patterns below (schema in `src/db/schema/`, a `src/features/streaks/` folder with the `services.ts`/`actions.ts` split, all user-scoped).
 
 ## Commands
 
@@ -34,19 +34,19 @@ A `DATABASE_URL` (PostgreSQL) must be set in `.env.local` for the app, Drizzle, 
 - **Next.js 16** (App Router, React 19, Server Components/Actions) — note Next 16 renames middleware to **`src/proxy.ts`**.
 - **Drizzle ORM** over `node-postgres` (`pg` Pool).
 - **Better Auth** (email/password + username plugin). Auth and account UI are hand-coded against the Better Auth client (`src/lib/auth-client.ts`, with `usernameClient`) and server API — no `better-auth-ui`.
-- **Tailwind v4** + **shadcn/ui built on Base UI** (`@base-ui/react`) — generated from the `base-maia` style / `mist` base-color preset (see `components.json`); components live in `src/components/ui/`. App is currently hard-coded to dark mode in `layout.tsx`. Fonts: Inter (body), Merriweather (headings, via `font-heading`), Geist Mono.
+- **Tailwind v4** + **shadcn/ui built on Base UI** (`@base-ui/react`) — generated from the `base-maia` style / `mist` base-color preset (see `components.json`); primitives live in `src/components/ui/`. Light/dark/system theming via `next-themes` (class strategy, `ThemeProvider` in `layout.tsx`, toggle on the account page). Fonts: Inter (body), Merriweather (headings, via `font-heading`), Geist Mono.
 - Forms: `react-hook-form` + `zod` (+ `drizzle-zod`).
 
 ## Architecture
 
-**Data access is centralised in `src/app/actions.ts`** — a single `"use server"` module containing every DB operation (CRUD for goals/tasks, goal-progress logging). There is no separate API layer or service/repository abstraction; components call these server actions directly.
+**Data access follows the feature split (see [Conventions](#conventions)).** Each resource lives in `src/features/{name}/` with a read/write split: `services.ts` (reads — `import "server-only"`, returning render-ready types) and `actions.ts` (mutations — `"use server"`). Pages compose features; client components call the feature's actions directly. There is no separate API layer or service/repository abstraction.
 
-Two invariants enforced throughout `actions.ts`:
+Two invariants enforced throughout the data layer:
 
-1. **Every action calls `getUserId()` first** (reads the Better Auth session from request headers, throws `Unauthorized` if absent) and scopes all queries with `eq(table.userId, userId)`. New data-access code must follow this pattern — there is no row-level security in the DB.
+1. **Every service and action calls `getUserId()` first** (`src/utils/get-user-id.ts` — reads the Better Auth session from request headers, throws `Unauthorized` if absent) and scopes all queries with `eq(table.userId, userId)`. There is no row-level security in the DB.
 2. **Mutations call `revalidatePath("/")`** to refresh the cached server-rendered page.
 
-Goal progress is **derived, not stored**: `getGoals()` computes each goal's progress with a correlated SQL subquery that sums `goal_log.value` over the current period window (`date_trunc` by daily/weekly/monthly/yearly). Logging progress inserts a `goalLog` row rather than mutating the goal.
+Goal progress is **derived, not stored**: `getGoals()` (`src/features/goals/services.ts`) computes each goal's progress with a correlated SQL subquery that sums `goal_log.value` over the current period window (`date_trunc` by daily/weekly/monthly/yearly). Logging progress inserts a `goalLog` row rather than mutating the goal.
 
 **Auth flow:**
 
@@ -69,7 +69,7 @@ Goal progress is **derived, not stored**: `getGoals()` computes each goal's prog
 
 ## Conventions
 
-These are the standard to build to — the "get it right the first time" layer; the audit checklist is the safety net. They're written as the **target** across apps, not just a description of momentum as it is today. Where momentum hasn't caught up, that's a migration target, called out in the boxes below — not an excuse to write to the old shape.
+These are the standard to build to — the "get it right the first time" layer; the audit checklist is the safety net. They're written as the **target** across apps, and momentum now follows them.
 
 ### Architecture: feature folders + read/write split
 
@@ -80,8 +80,6 @@ These are the standard to build to — the "get it right the first time" layer; 
 - **Mutations call `revalidatePath(...)`** so the cached server render refreshes.
 - **Protected pages call `requirePageAuth()` first** (`src/utils/require-page-auth.ts`). Pages in a `(without-nav)`/public group are the only exceptions.
 
-> **Momentum today (migration target):** momentum hasn't adopted the split yet — all reads _and_ writes sit in one `src/app/actions.ts`, with no `features/` folders or `services.ts`. New features should be built the new way (`features/{name}/` with a `services.ts`/`actions.ts` split, render-ready types). Until a given area is migrated, the data-layer rules above apply to `actions.ts`.
-
 ### React & components
 
 - **Default to server components.** Add `"use client"` only when the file actually uses client state/effects/handlers or a browser API (`useState`, `useEffect`, `useRouter`, an `on*` handler, `window`/`document`/`localStorage`). A `"use client"` file with none of these is cargo-culted.
@@ -91,7 +89,7 @@ These are the standard to build to — the "get it right the first time" layer; 
 - **Don't fight the primitives.** They size their own icons and spacing — don't pass `size={N}` to an icon inside `Button`/`DropdownMenuItem`/`Badge`, and don't wrap a button label in a `<span>`.
 - **Forms** use `react-hook-form` + `zod` + the `Form`/`FormField`/`FormControl`/`FormMessage` components. Surface validation through `FormMessage`; surface server errors inline.
 
-> **Momentum today:** React Query isn't installed. The few client mutations (account cards) call `authClient.*` then `router.refresh()`, which is fine. Add React Query when a real client-side _fetch_ appears, rather than reaching for `useEffect`.
+> React Query isn't installed yet — there's no client-side _fetch_ in the app (client mutations call `authClient.*` / a server action then `router.refresh()`, which is fine). Add it when a real client-side fetch appears, rather than reaching for `useEffect`.
 
 ### Styling
 
@@ -107,5 +105,6 @@ These are the standard to build to — the "get it right the first time" layer; 
 ### Tooling
 
 - Import alias `@/*` → `src/*`.
+- **File names are kebab-case** (`goal-card.tsx`, `get-user-id.ts`, `daily-quote.tsx`), matching the generated `ui/` primitives. The exported symbol keeps its natural casing (`GoalCard`, `getUserId`).
 - Add new components via the shadcn CLI (`pnpm dlx shadcn@latest`, config in `components.json`); icons from `lucide-react`.
 - Prettier sorts imports into groups (react → next → third-party → `@/` → relative); run `pnpm format` before committing.

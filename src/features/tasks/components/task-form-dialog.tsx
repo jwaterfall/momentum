@@ -6,7 +6,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
-import { createTask, updateTask } from "@/app/actions";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -34,9 +33,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Task, TaskPriority, task } from "@/db/schema";
 import { capitalize } from "@/lib/utils";
 
-import { Task, TaskPriority, task } from "../db/schema";
+import { createTask, updateTask } from "../actions";
 
 const taskFormSchema = createInsertSchema(task, {
   title: (schema) => schema.min(1, "Title is required"),
