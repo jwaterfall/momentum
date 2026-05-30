@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BarChart2, Home, LucideIcon, User } from "lucide-react";
+import { BarChart2, History, Home, LucideIcon, User } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
@@ -34,11 +34,14 @@ function NavItem({ icon: Icon, href, exact, children }: NavItemProps) {
 export function BottomNav() {
   return (
     <div className="border-t grid grid-cols-[repeat(auto-fit,minmax(0,1fr))]">
-      <NavItem icon={Home} href="/">
+      <NavItem icon={Home} href="/" exact>
         Home
       </NavItem>
       <NavItem icon={BarChart2} href="/stats">
         Stats
+      </NavItem>
+      <NavItem icon={History} href="/history">
+        History
       </NavItem>
       <NavItem icon={User} href="/account">
         Account

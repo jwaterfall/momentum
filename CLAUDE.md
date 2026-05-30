@@ -56,8 +56,10 @@ Goal progress is **derived, not stored**: `getGoals()` (`src/features/goals/serv
 
 **Routing** uses App Router route groups:
 
-- `src/app/(with-nav)/` — authenticated pages with the bottom nav (`/` dashboard, `/stats`, `/account`).
+- `src/app/(with-nav)/` — authenticated pages with the bottom nav (`/` dashboard, `/stats`, `/history`, `/account`).
 - `src/app/(without-nav)/` — the auth pages (`/auth/sign-in`, `/auth/sign-up`).
+
+`features/history/` is read-mostly + corrective: `getHistory()` merges goal logs, streak slips, and completed tasks into one reverse-chronological feed; its actions let you undo them (delete a `goalLog`/`streakLog` row, or un-complete a task).
 
 **Schema** lives in `src/db/schema/` (`goals.ts`, `tasks.ts`, `streaks.ts`, `auth.ts`, re-exported via `index.ts`). Postgres enums are defined as TS `enum`s wrapped in `pgEnum`. `auth.ts` is generated — don't hand-edit it; change Better Auth config and regenerate. Drizzle infers `Goal`/`Task`/`Streak` types via `$inferSelect`/`$inferInsert`.
 
