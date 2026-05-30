@@ -91,7 +91,7 @@ export function GoalFormDialog({ goal, children }: GoalFormDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      {children != null ? <DialogTrigger asChild>{children}</DialogTrigger> : null}
+      {children != null ? <DialogTrigger render={children as React.ReactElement} /> : null}
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{isEdit ? "Edit Goal" : "Add Goal"}</DialogTitle>

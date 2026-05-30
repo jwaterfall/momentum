@@ -57,11 +57,9 @@ export function TaskCard({ task }: { task: Task }) {
       </CardHeader>
       <div className="flex items-center gap-1 mr-4">
         <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="size-8">
-              <Ellipsis className="h-4 w-4" />
-              <span className="sr-only">Task options</span>
-            </Button>
+          <DropdownMenuTrigger render={<Button variant="ghost" size="icon" className="size-8" />}>
+            <Ellipsis className="h-4 w-4" />
+            <span className="sr-only">Task options</span>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <TaskFormDialog task={task}>
@@ -71,11 +69,13 @@ export function TaskCard({ task }: { task: Task }) {
               </DropdownMenuItem>
             </TaskFormDialog>
             <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <DropdownMenuItem variant="destructive" onSelect={(e) => e.preventDefault()}>
-                  <Trash2 className="h-4 w-4" />
-                  Delete
-                </DropdownMenuItem>
+              <AlertDialogTrigger
+                render={
+                  <DropdownMenuItem variant="destructive" onSelect={(e) => e.preventDefault()} />
+                }
+              >
+                <Trash2 className="h-4 w-4" />
+                Delete
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>

@@ -1,8 +1,14 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Inter, Merriweather } from "next/font/google";
+
+import { cn } from "@/lib/utils";
 
 import "./globals.css";
 import { Providers } from "./providers";
+
+const merriweatherHeading = Merriweather({ subsets: ["latin"], variable: "--font-heading" });
+
+const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -25,7 +31,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
+    <html
+      lang="en"
+      className={cn("dark", "font-sans", inter.variable, merriweatherHeading.variable)}
+    >
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased h-screen overflow-hidden`}
       >

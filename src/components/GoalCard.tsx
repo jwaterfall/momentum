@@ -68,11 +68,11 @@ export function GoalCard({ goal }: { goal: GoalWithProgress }) {
           </CardDescription>
         </div>
         <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="size-8 shrink-0">
-              <Ellipsis className="h-4 w-4" />
-              <span className="sr-only">Goal options</span>
-            </Button>
+          <DropdownMenuTrigger
+            render={<Button variant="ghost" size="icon" className="size-8 shrink-0" />}
+          >
+            <Ellipsis className="h-4 w-4" />
+            <span className="sr-only">Goal options</span>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <GoalFormDialog goal={goal}>
@@ -82,11 +82,13 @@ export function GoalCard({ goal }: { goal: GoalWithProgress }) {
               </DropdownMenuItem>
             </GoalFormDialog>
             <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <DropdownMenuItem variant="destructive" onSelect={(e) => e.preventDefault()}>
-                  <Trash2 className="h-4 w-4" />
-                  Delete
-                </DropdownMenuItem>
+              <AlertDialogTrigger
+                render={
+                  <DropdownMenuItem variant="destructive" onSelect={(e) => e.preventDefault()} />
+                }
+              >
+                <Trash2 className="h-4 w-4" />
+                Delete
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
