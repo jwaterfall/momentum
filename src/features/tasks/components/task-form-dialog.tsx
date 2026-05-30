@@ -1,12 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
-import { createTask, updateTask } from "@/app/actions";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -29,13 +28,15 @@ import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Task, TaskPriority, task } from "@/db/schema";
 import { capitalize } from "@/lib/utils";
 
-import { Task, TaskPriority, task } from "../db/schema";
+import { createTask, updateTask } from "../actions";
 
 const taskFormSchema = createInsertSchema(task, {
   title: (schema) => schema.min(1, "Title is required"),
@@ -52,10 +53,18 @@ const defaultTaskValues: TaskFormInput = {
 type TaskFormDialogProps = {
   task?: Task | null;
   children?: React.ReactNode;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 };
 
-export function TaskFormDialog({ task, children }: TaskFormDialogProps) {
-  const [open, setOpen] = useState(false);
+export function TaskFormDialog({
+  task,
+  children,
+  open: openProp,
+  onOpenChange,
+}: TaskFormDialogProps) {
+  const [internalOpen, setInternalOpen] = useState(false);
+  const open = openProp ?? internalOpen;
   const isEdit = !!task;
 
   const form = useForm<TaskFormInput>({
@@ -63,26 +72,31 @@ export function TaskFormDialog({ task, children }: TaskFormDialogProps) {
     defaultValues: defaultTaskValues,
   });
 
+  const handleOpenChange = (next: boolean) => {
+    onOpenChange?.(next);
+    if (openProp === undefined) {
+      setInternalOpen(next);
+    }
+  };
+
+  useEffect(() => {
+    if (open) {
+      form.reset(task ?? defaultTaskValues);
+    }
+  }, [open, task, form]);
+
   const handleSubmit = async (data: TaskFormInput) => {
     if (isEdit && task) {
       await updateTask(task.id, data);
     } else {
       await createTask(data);
     }
-    setOpen(false);
-    form.reset();
-  };
-
-  const handleOpenChange = (next: boolean) => {
-    setOpen(next);
-    if (next) {
-      form.reset(task ?? defaultTaskValues);
-    }
+    handleOpenChange(false);
   };
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      {children != null ? <DialogTrigger asChild>{children}</DialogTrigger> : null}
+      {children != null ? <DialogTrigger render={children as React.ReactElement} /> : null}
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{isEdit ? "Edit Task" : "Add Task"}</DialogTitle>
@@ -119,15 +133,19 @@ export function TaskFormDialog({ task, children }: TaskFormDialogProps) {
                   >
                     <FormControl>
                       <SelectTrigger aria-invalid={fieldState.invalid} className="w-full">
-                        <SelectValue />
+                        <SelectValue>
+                          {(value) => (typeof value === "string" ? capitalize(value) : null)}
+                        </SelectValue>
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {Object.values(TaskPriority).map((priority) => (
-                        <SelectItem key={priority} value={priority}>
-                          {capitalize(priority)}
-                        </SelectItem>
-                      ))}
+                      <SelectGroup>
+                        {Object.values(TaskPriority).map((priority) => (
+                          <SelectItem key={priority} value={priority}>
+                            {capitalize(priority)}
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
                     </SelectContent>
                   </Select>
                   <FormMessage />

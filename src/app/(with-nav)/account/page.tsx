@@ -1,39 +1,37 @@
-import {
-  ChangeEmailCard,
-  ChangePasswordCard,
-  DeleteAccountCard,
-  SessionsCard,
-  UpdateNameCard,
-  UpdateUsernameCard,
-} from "@daveyplate/better-auth-ui";
-
-import { PrivateRoute } from "@/components/PrivateRoute";
+import { PageHeader } from "@/components/page-header";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { Separator } from "@/components/ui/separator";
+import { DeleteAccountCard } from "@/features/account/components/delete-account-card";
+import { PasswordCard } from "@/features/account/components/password-card";
+import { ProfileCard } from "@/features/account/components/profile-card";
+import { SessionsCard } from "@/features/account/components/sessions-card";
+import { getAccount } from "@/features/account/services";
+import { requirePageAuth } from "@/utils/require-page-auth";
 
-export default function AccountPage() {
+export default async function AccountPage() {
+  await requirePageAuth();
+  const { profile, sessions } = await getAccount();
+
   return (
-    <PrivateRoute>
-      <div className="p-6 space-y-6">
-        <header className="space-y-1">
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">Account Settings</h1>
-          <p className="text-muted-foreground text-sm">Manage your account and preferences</p>
-        </header>
+    <div className="p-6 space-y-6">
+      <PageHeader
+        title="Account Settings"
+        description="Manage your account and preferences"
+        action={<ThemeToggle />}
+      />
 
-        <div className="space-y-4">
-          <ChangeEmailCard classNames={{ button: "w-full" }} />
-          <ChangePasswordCard classNames={{ button: "w-full" }} />
-          <UpdateNameCard classNames={{ button: "w-full" }} />
-          <UpdateUsernameCard classNames={{ button: "w-full" }} />
-          <SessionsCard />
-          <DeleteAccountCard classNames={{ button: "w-full" }} />
-        </div>
-
-        <Separator />
-
-        <p className="text-xs text-muted-foreground text-center">
-          Momentum v{process.env.NEXT_PUBLIC_APP_VERSION}
-        </p>
+      <div className="space-y-4">
+        <ProfileCard {...profile} />
+        <PasswordCard />
+        <SessionsCard sessions={sessions} />
+        <DeleteAccountCard />
       </div>
-    </PrivateRoute>
+
+      <Separator />
+
+      <p className="text-xs text-muted-foreground text-center">
+        Momentum v{process.env.NEXT_PUBLIC_APP_VERSION}
+      </p>
+    </div>
   );
 }

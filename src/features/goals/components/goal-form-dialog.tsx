@@ -1,12 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
-import { createGoal, updateGoal } from "@/app/actions";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -29,13 +28,15 @@ import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Goal, GoalTargetType, GoalTargetUnit, Period, goal } from "@/db/schema";
 import { capitalize } from "@/lib/utils";
 
-import { Goal, GoalTargetType, GoalTargetUnit, Period, goal } from "../db/schema";
+import { createGoal, updateGoal } from "../actions";
 
 const goalFormSchema = createInsertSchema(goal, {
   title: (schema) => schema.min(1, "Title is required"),
@@ -58,10 +59,18 @@ const defaultGoalValues: GoalFormInput = {
 type GoalFormDialogProps = {
   goal?: Goal | null;
   children?: React.ReactNode;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 };
 
-export function GoalFormDialog({ goal, children }: GoalFormDialogProps) {
-  const [open, setOpen] = useState(false);
+export function GoalFormDialog({
+  goal,
+  children,
+  open: openProp,
+  onOpenChange,
+}: GoalFormDialogProps) {
+  const [internalOpen, setInternalOpen] = useState(false);
+  const open = openProp ?? internalOpen;
   const isEdit = !!goal;
 
   const form = useForm<GoalFormInput>({
@@ -72,26 +81,31 @@ export function GoalFormDialog({ goal, children }: GoalFormDialogProps) {
   const targetType = useWatch({ control: form.control, name: "targetType" });
   const period = useWatch({ control: form.control, name: "period" });
 
+  const handleOpenChange = (next: boolean) => {
+    onOpenChange?.(next);
+    if (openProp === undefined) {
+      setInternalOpen(next);
+    }
+  };
+
+  useEffect(() => {
+    if (open) {
+      form.reset(goal ?? defaultGoalValues);
+    }
+  }, [open, goal, form]);
+
   const onSubmit = async (data: GoalFormInput) => {
     if (isEdit && goal) {
       await updateGoal(goal.id, data);
     } else {
       await createGoal(data);
     }
-    setOpen(false);
-    form.reset();
-  };
-
-  const handleOpenChange = (next: boolean) => {
-    setOpen(next);
-    if (next) {
-      form.reset(goal ?? defaultGoalValues);
-    }
+    handleOpenChange(false);
   };
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      {children != null ? <DialogTrigger asChild>{children}</DialogTrigger> : null}
+      {children != null ? <DialogTrigger render={children as React.ReactElement} /> : null}
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{isEdit ? "Edit Goal" : "Add Goal"}</DialogTitle>
@@ -125,15 +139,19 @@ export function GoalFormDialog({ goal, children }: GoalFormDialogProps) {
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger className="w-full">
-                          <SelectValue />
+                          <SelectValue>
+                            {(value) => (typeof value === "string" ? capitalize(value) : null)}
+                          </SelectValue>
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {Object.values(Period).map((p) => (
-                          <SelectItem key={p} value={p}>
-                            {capitalize(p)}
-                          </SelectItem>
-                        ))}
+                        <SelectGroup>
+                          {Object.values(Period).map((p) => (
+                            <SelectItem key={p} value={p}>
+                              {capitalize(p)}
+                            </SelectItem>
+                          ))}
+                        </SelectGroup>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -150,15 +168,19 @@ export function GoalFormDialog({ goal, children }: GoalFormDialogProps) {
                     <Select onValueChange={field.onChange} value={field.value ?? undefined}>
                       <FormControl>
                         <SelectTrigger className="w-full">
-                          <SelectValue />
+                          <SelectValue>
+                            {(value) => (typeof value === "string" ? capitalize(value) : null)}
+                          </SelectValue>
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {Object.values(GoalTargetType).map((type) => (
-                          <SelectItem key={type} value={type}>
-                            {capitalize(type)}
-                          </SelectItem>
-                        ))}
+                        <SelectGroup>
+                          {Object.values(GoalTargetType).map((type) => (
+                            <SelectItem key={type} value={type}>
+                              {capitalize(type)}
+                            </SelectItem>
+                          ))}
+                        </SelectGroup>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -189,15 +211,21 @@ export function GoalFormDialog({ goal, children }: GoalFormDialogProps) {
                               >
                                 <FormControl>
                                   <SelectTrigger>
-                                    <SelectValue />
+                                    <SelectValue>
+                                      {(value) =>
+                                        typeof value === "string" ? capitalize(value) : null
+                                      }
+                                    </SelectValue>
                                   </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
-                                  {Object.values(GoalTargetUnit).map((unit) => (
-                                    <SelectItem key={unit} value={unit}>
-                                      {capitalize(unit)}
-                                    </SelectItem>
-                                  ))}
+                                  <SelectGroup>
+                                    {Object.values(GoalTargetUnit).map((unit) => (
+                                      <SelectItem key={unit} value={unit}>
+                                        {capitalize(unit)}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectGroup>
                                 </SelectContent>
                               </Select>
                             </FormItem>

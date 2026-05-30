@@ -1,16 +1,15 @@
-"use client";
-
 import { Plus } from "lucide-react";
 
-import { GoalFormDialog } from "@/components/GoalFormDialog";
 import { Button } from "@/components/ui/button";
 
-export function AddGoalDialog() {
+import { TaskFormDialog } from "./task-form-dialog";
+
+export function AddTaskDialog() {
   return (
-    <GoalFormDialog>
+    <TaskFormDialog>
       <Button variant="ghost" size="icon">
         <Plus />
       </Button>
-    </GoalFormDialog>
+    </TaskFormDialog>
   );
 }
